@@ -6,7 +6,7 @@ URL: https://care.tim-martin.com/
 
 ![demo](./demo.png)
 
-RIP, dad, 1952-01-03 to 2023-06-11
+RIP, dad, 1953-01-03 to 2023-06-11
 
 ![my happy dad](./src/lib/images/dad.png)
 
