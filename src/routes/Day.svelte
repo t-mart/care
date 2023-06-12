@@ -26,7 +26,7 @@
 <div>
 	<h2 class="text-xl font-semibold text-gray-700">{date}</h2>
 	<ul>
-		{#each events as event}
+		{#each events as event (event.id)}
 			<li>
 				<Event {event} />
 			</li>

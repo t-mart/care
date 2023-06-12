@@ -1,3 +1,4 @@
+import { id } from 'date-fns/locale';
 import type { Actions } from './$types';
 import type { PageServerLoad } from './$types';
 import { CareEventListPayload } from './events/event';
@@ -34,6 +35,22 @@ export const actions = {
 			return fail(400, json);
 		}
 		return json;
+	},
+	edit: async ({ request, fetch }) => {
+		const data = await request.formData();
+	},
+	delete: async ({ request, fetch }) => {
+		const data = await request.formData();
+		const id = data.get('id');
+
+		const response = await fetch(`/events/${id}`, {
+			method: 'DELETE'
+		});
+
+		if (!response.ok) {
+			return fail(400, { success: false, message: 'Failed to delete' });
+		}
+		return { success: true, message: 'deleted' };
 	}
 } satisfies Actions;
 

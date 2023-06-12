@@ -1,8 +1,23 @@
 <script lang="ts">
 	import type { CareEvent } from './events/event';
 	import type { z } from 'zod';
+	import { openedEditMenuEventIdStore } from './stores';
+	import { enhance } from '$app/forms';
 
 	export let event: z.infer<typeof CareEvent>;
+	export let editMenuIsOpen = false;
+
+	openedEditMenuEventIdStore.subscribe((newId) => {
+		editMenuIsOpen = newId === event.id;
+	});
+
+	function handleToggleEditMenuClick() {
+		if (editMenuIsOpen) {
+			openedEditMenuEventIdStore.set(null);
+		} else {
+			openedEditMenuEventIdStore.set(event.id);
+		}
+	}
 
 	let emojiTypeMap = new Map([
 		['food', '🍔'],
@@ -11,28 +26,25 @@
 	]);
 </script>
 
-<div class="flex">
-	<button class="text-gray-400 hover:text-gray-600">
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			width="24"
-			height="24"
-			viewBox="0 0 40 40"
-			fill="currentColor"
-		>
-			<circle cx="20" cy="12" r="3" />
-			<circle cx="20" cy="20" r="3" />
-			<circle cx="20" cy="28" r="3" />
-		</svg>
-	</button>
+<div class="flex gap-2 justify-between">
 	<div class="flex gap-2">
-		<div>
+		<button
+			on:click={handleToggleEditMenuClick}
+			class="underline"
+		>
 			{event.datetime.toLocaleTimeString('en-US', {
 				hour: 'numeric',
 				minute: 'numeric'
 			})}
-		</div>
+		</button>
 		<div>{emojiTypeMap.get(event.type)}</div>
 		<div>{event.description}</div>
 	</div>
+	{#if editMenuIsOpen}
+		<form class="flex gap-2" method="POST" use:enhance>
+			<input type="hidden" name="id" value={event.id} />
+			<button class="underline" formaction="?/edit">Edit</button>
+			<button class="underline" formaction="?/delete">Delete</button>
+		</form>
+	{/if}
 </div>

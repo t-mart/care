@@ -8,8 +8,8 @@
 	import { isAddFormOpenedStore, formActionDataStore } from './stores';
 
 	// don't change these names, they are used by the framework
-    export let data: PageData;
-    export let form: ActionData;
+	export let data: PageData;
+	export let form: ActionData;
 
 	$: formActionDataStore.set(form);
 
@@ -53,7 +53,6 @@
 	isAddFormOpenedStore.subscribe((value) => {
 		isAddFormOpened = value;
 	});
-
 </script>
 
 <svelte:head>
@@ -66,8 +65,8 @@
 		<AddForm />
 	{/if}
 	<ol class="flex flex-col gap-4 w-full px-4">
-		{#each Array.from(dateBuckets.values()) as dateOfEvents}
-			<li><Day events={dateOfEvents} /></li>
+		{#each Array.from(dateBuckets.entries()) as [date, eventsInDate] (date)}
+			<li><Day events={eventsInDate} /></li>
 		{/each}
 	</ol>
 </div>
