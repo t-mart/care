@@ -1,13 +1,17 @@
 <script lang="ts">
 	import { formatISO } from 'date-fns';
-	import type { PageData } from './$types';
+	import type { PageData, ActionData } from './$types';
 	import Day from './Day.svelte';
 	import { CareEventListPayload, type CareEvent } from './events/event';
 	import type { z } from 'zod';
 	import AddForm from './AddForm.svelte';
-	import { isAddFormOpenedStore } from './stores';
+	import { isAddFormOpenedStore, formActionDataStore } from './stores';
 
-	export let data: PageData;
+	// don't change these names, they are used by the framework
+    export let data: PageData;
+    export let form: ActionData;
+
+	$: formActionDataStore.set(form);
 
 	let dateBuckets: Map<String, z.infer<typeof CareEvent>[]> = new Map();
 
@@ -61,7 +65,7 @@
 	{#if isAddFormOpened}
 		<AddForm />
 	{/if}
-	<ol class="flex flex-col gap-4 w-full p-4">
+	<ol class="flex flex-col gap-4 w-full px-4">
 		{#each Array.from(dateBuckets.values()) as dateOfEvents}
 			<li><Day events={dateOfEvents} /></li>
 		{/each}

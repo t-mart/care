@@ -1,9 +1,9 @@
 import { FIRESTORE } from './firestore';
 import { parseJSONRequest } from './util';
 import { json, error, type RequestHandler } from '@sveltejs/kit';
-import { type CareEventListPayload, fromDocumentSnapshot, NewCareEvent } from './event';
+import { fromDocumentSnapshot, NewCareEvent } from './event';
 import { CARE_EVENT_COLLECTION_NAME } from '$lib/constants';
-import type { z } from 'zod';
+import { ZodError, type z } from 'zod';
 
 // get all events
 export const GET = (async () => {
@@ -12,11 +12,7 @@ export const GET = (async () => {
 		.then((querySnapshot) => querySnapshot.docs)
 		.then((docSnapshots) => docSnapshots.map(fromDocumentSnapshot));
 
-	const payload: z.infer<typeof CareEventListPayload> = {
-		events: careEvents
-	};
-
-	return json(payload);
+	return json({ success: true, events: careEvents } as JSONResponseBody);
 }) satisfies RequestHandler;
 
 // create a new event (id is auto-generated). returns the new event
@@ -27,7 +23,10 @@ export const POST = (async ({ request }) => {
 	try {
 		newCareEvent = NewCareEvent.parse(requestJSON);
 	} catch (err) {
-		throw error(400, err as Error);
+		if (err instanceof ZodError) {
+			throw error(400, { success: false, message: "Couldn't parse", issues: err.issues });
+		}
+		throw error(400, { success: false, message: JSON.stringify(err) });
 	}
 
 	const collectionRef = FIRESTORE.collection(CARE_EVENT_COLLECTION_NAME);
@@ -39,5 +38,5 @@ export const POST = (async ({ request }) => {
 
 	const savedCareEvent = fromDocumentSnapshot(snapshot);
 
-	return json(savedCareEvent);
+	return json({ success: true, event: savedCareEvent } as JSONResponseBody);
 }) satisfies RequestHandler;

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import is from 'date-fns/locale/is';
 	import HeadShake from './HeadShake.svelte';
 	import { headerHeightPxStore, isAddFormOpenedStore } from './stores';
 
@@ -22,6 +21,10 @@
 	}
 
 	$: isAddFormOpenedStore.set(isAddFormOpened);
+
+	isAddFormOpenedStore.subscribe((value) => {
+		isAddFormOpened = value;
+	});
 </script>
 
 <header

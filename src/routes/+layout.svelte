@@ -10,13 +10,10 @@
 	});
 </script>
 
-<div class="max-w-prose mx-auto my-2" style="margin-top: {mainMarginTopPx}px;">
+<div class="max-w-prose mx-auto my-2">
 	<Header />
 
-	<main>
+	<main style="margin-top: {mainMarginTopPx}px;">
 		<slot />
 	</main>
 </div>
-
-<style>
-</style>

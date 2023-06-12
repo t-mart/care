@@ -3,7 +3,7 @@ import { json, error } from '@sveltejs/kit';
 import { FIRESTORE } from '../firestore';
 import { parseJSONRequest } from '../util';
 import { fromDocumentSnapshot, UpdatingCareEvent } from '../event';
-import type { z } from 'zod';
+import { type z, ZodError } from 'zod';
 
 // get an event by id
 export const GET = (async ({ params }) => {
@@ -14,7 +14,7 @@ export const GET = (async ({ params }) => {
 	const snapshot = await docRef.get();
 
 	if (!snapshot.exists) {
-		throw error(404, 'Care event not found');
+		throw error(404, { success: false, message: 'Care event not found' });
 	}
 
 	const careEvent = fromDocumentSnapshot(snapshot);
@@ -31,7 +31,10 @@ export const PUT = (async ({ params, request }) => {
 	try {
 		updatingCareEvent = UpdatingCareEvent.parse(requestJSON);
 	} catch (err) {
-		throw error(400, err as Error);
+		if (err instanceof ZodError) {
+			throw error(400, { success: false, message: "Couldn't parse", issues: err.issues });
+		}
+		throw error(400, { success: false, message: JSON.stringify(err) });
 	}
 
 	const docRef = FIRESTORE.collection('care_events').doc(id);
@@ -39,14 +42,14 @@ export const PUT = (async ({ params, request }) => {
 	try {
 		await docRef.update(updatingCareEvent);
 	} catch (err) {
-		throw error(404, 'Care event not found');
+		throw error(404, { success: false, message: 'Care event not found' });
 	}
 
 	// race condition possible here
 	const snapshot = await docRef.get();
 	const careEvent = fromDocumentSnapshot(snapshot);
 
-	return json(careEvent);
+	return json({ success: true, event: careEvent } as JSONResponseBody);
 }) satisfies RequestHandler;
 
 // delete an event
@@ -57,5 +60,5 @@ export const DELETE = (async ({ params }) => {
 
 	await docRef.delete(); // deletes always succeed, even if the doc doesn't exist
 
-	return json({ message: 'Care event deleted' });
+	return json({ success: true, message: 'Care event deleted' } as JSONResponseBody);
 }) satisfies RequestHandler;

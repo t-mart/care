@@ -1,32 +1,11 @@
 <script lang="ts">
-	// import type { CareEvent } from './events/event';
-	// import type { z } from 'zod';
-
-	// export let event: z.infer<typeof CareEvent>;
+	import { DATETIME_INPUT_FORMAT } from '$lib/constants';
 	import { format, parse } from 'date-fns';
+	import { enhance } from '$app/forms';
+	import type { SubmitFunction } from '@sveltejs/kit';
+	import { isAddFormOpenedStore } from './stores';
 
-	const DATETIME_INPUT_FORMAT = "yyyy-MM-dd'T'HH:mm";
-
-	let truncatedDatetimeValue: string = formatForDateTimeInput(new Date());
-	let isoDatetimeValue: string;
-
-	$: {
-		isoDatetimeValue = parse(
-			truncatedDatetimeValue,
-			DATETIME_INPUT_FORMAT,
-			new Date()
-		).toISOString();
-	}
-
-	function formatForDateTimeInput(date: Date) {
-		return format(date, DATETIME_INPUT_FORMAT);
-	}
-
-	function defaultToNow(inputElement: HTMLInputElement) {
-		// Format the date and time in the YYYY-MM-DDThh:mm format
-		inputElement.value = formatForDateTimeInput(new Date());
-	}
-
+	let datetimeLocalInputValue: string = format(new Date(), DATETIME_INPUT_FORMAT);
 	let eventType = 'medication';
 
 	const descriptionLabels = new Map([
@@ -46,9 +25,13 @@
 		['food', 'When was the food eaten?'],
 		['symptom', 'When was the symptom experienced?']
 	]);
+
+	let formAction: SubmitFunction = ({}) => {
+		isAddFormOpenedStore.set(false);
+	};
 </script>
 
-<form class="w-full p-4 rounded-lg shadow-sm bg-gray-200" method="POST" action="?/add">
+<form class="w-full p-4 rounded-lg shadow-sm bg-gray-200" method="POST" use:enhance={formAction} action="?/add">
 	<div class="flex flex-col gap-4">
 		<fieldset class="flex flex-col justify-start">
 			<legend class="block text-gray-700 text-sm font-bold mb-2">What kind of thing was it?</legend>
@@ -111,6 +94,7 @@
 				type="text"
 				name="description"
 				placeholder={descriptionPlaceholders.get(eventType)}
+				required
 			/>
 		</div>
 
@@ -122,10 +106,9 @@
 				id="event-datetime"
 				class="px-3 py-2 rounded-md text-gray-700 bg-gray-100 w-min"
 				type="datetime-local"
-				use:defaultToNow
-				bind:value={truncatedDatetimeValue}
+				name="datetimeLocalInput"
+				bind:value={datetimeLocalInputValue}
 			/>
-			<input type="hidden" name="datetime" bind:value={isoDatetimeValue} />
 		</div>
 
 		<div>
