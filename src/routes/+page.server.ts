@@ -2,6 +2,8 @@ import type { Actions } from './$types';
 import type { PageServerLoad } from './$types';
 import { CareEventListPayload } from './events/event';
 import { fail } from '@sveltejs/kit';
+import { PATIENT_TIMEZONE } from '$lib/constants';
+import { zonedTimeToUtc } from 'date-fns-tz';
 
 export const load = (async ({ fetch }) => {
 	const response = await fetch('/events');
@@ -10,13 +12,21 @@ export const load = (async ({ fetch }) => {
 	return payload;
 }) satisfies PageServerLoad;
 
+// attach the patient's timezone to the date string that comes from the datetime-local input
+function addPatientTimeZone(date: string | null) {
+	if (!date) {
+		return date;
+	}
+	return zonedTimeToUtc(date, PATIENT_TIMEZONE);
+}
+
 export const actions = {
 	add: async ({ request, fetch }) => {
 		const data = await request.formData();
 
-		// just do rough structuring here, validation will happen on the server
+		// just do rough structuring here, validation will happen at the API endpoint
 		const newEvent = {
-			datetime: data.get('datetimeLocalInput'),
+			datetime: addPatientTimeZone(data.get('datetimeLocalInput') as string | null),
 			type: data.get('eventType'),
 			description: data.get('description')
 		};
@@ -35,12 +45,13 @@ export const actions = {
 		}
 		return json;
 	},
+
 	edit: async ({ request, fetch }) => {
 		const data = await request.formData();
 		const updatedEvent = {
-			datetime: data.get('datetimeLocalInput') || undefined,
-			type: data.get('eventType') || undefined,
-			description: data.get('description') || undefined
+			datetime: addPatientTimeZone(data.get('datetimeLocalInput') as string | null),
+			type: data.get('eventType'),
+			description: data.get('description')
 		};
 
 		const response = await fetch(`/events/${data.get('id')}`, {
@@ -56,6 +67,7 @@ export const actions = {
 		}
 		return { success: true, message: 'updated' };
 	},
+
 	delete: async ({ request, fetch }) => {
 		const data = await request.formData();
 		const id = data.get('id');

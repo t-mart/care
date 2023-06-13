@@ -11,7 +11,7 @@
 		id: undefined,
 		type: 'medication',
 		description: '',
-		datetime: utcToZonedTime(new Date(), PATIENT_TIMEZONE)
+		datetime: utcToZonedTime(new Date(), PATIENT_TIMEZONE) // default time is now, in patient's timezone
 	};
 	export let submitFunction: SubmitFunction = ({}) => {};
 

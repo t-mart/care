@@ -4,9 +4,12 @@
 	import { actionMenuEventIdStore, isAddFormOpenedStore } from './stores';
 	import { enhance } from '$app/forms';
 	import EventForm from './EventForm.svelte';
+	import { utcToZonedTime } from 'date-fns-tz';
+	import { PATIENT_TIMEZONE } from '$lib/constants';
 
 	export let event: z.infer<typeof CareEvent>;
 	let isEditing = false;
+	$: eventDatetimeInPatientTZ = utcToZonedTime(event.datetime, PATIENT_TIMEZONE);
 
 	function handleToggleActionMenuClick() {
 		isEditing = false;
@@ -34,7 +37,7 @@
 	<div class="flex gap-2 justify-between px-4">
 		<div class="flex gap-2 items-center">
 			<button on:click={handleToggleActionMenuClick} class="underline min-w-max">
-				{event.datetime.toLocaleTimeString('en-US', {
+				{eventDatetimeInPatientTZ.toLocaleTimeString('en-US', {
 					hour: 'numeric',
 					minute: 'numeric'
 				})}
