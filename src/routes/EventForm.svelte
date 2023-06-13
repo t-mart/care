@@ -1,16 +1,17 @@
 <script lang="ts">
-	import { DATETIME_INPUT_FORMAT } from '$lib/constants';
+	import { DATETIME_INPUT_FORMAT, PATIENT_TIMEZONE } from '$lib/constants';
 	import { format, parse } from 'date-fns';
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { z } from 'zod';
 	import type { NewOrUpdatingCareEvent } from './events/event';
+	import { utcToZonedTime } from 'date-fns-tz'
 
 	export let event: z.infer<typeof NewOrUpdatingCareEvent> = {
 		id: undefined,
 		type: 'medication',
 		description: '',
-		datetime: new Date()
+		datetime: utcToZonedTime(new Date(), PATIENT_TIMEZONE)
 	};
 	export let submitFunction: SubmitFunction = ({}) => {};
 
@@ -47,7 +48,7 @@
 	{/if}
 	<div class="flex flex-col gap-4">
 		<fieldset class="flex flex-col justify-start">
-			<legend class="block text-gray-700 text-sm font-bold mb-2">What kind of thing was it?</legend>
+			<legend class="block text-gray-700 font-bold mb-2">What kind of thing was it?</legend>
 			<div class="flex justify-start">
 				<label
 					for="medicationInput"
@@ -98,7 +99,7 @@
 		</fieldset>
 
 		<div>
-			<label for="description" class="block text-gray-700 text-sm font-bold mb-2"
+			<label for="description" class="block text-gray-700 font-bold mb-2"
 				>{descriptionLabels.get(event.type)}</label
 			>
 			<input
@@ -113,8 +114,11 @@
 		</div>
 
 		<div class="flex flex-col gap-2">
-			<label for="event-datetime" class="block text-gray-700 text-sm font-bold"
-				>{datetimeLabels.get(event.type)}</label
+			<label for="event-datetime" class="block text-gray-700 font-bold"
+				>{datetimeLabels.get(event.type)}
+				<span class="font-normal text-sm"
+					>(In patient's timezone, <span class="font-mono">{PATIENT_TIMEZONE}</span>)</span
+				></label
 			>
 			<input
 				id="event-datetime"
