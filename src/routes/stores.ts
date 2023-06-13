@@ -4,4 +4,4 @@ export const headerHeightPxStore = writable(0);
 
 export const isAddFormOpenedStore = writable(false);
 
-export const openedEditMenuEventIdStore: Writable<string | null> = writable(null);
+export const actionMenuEventIdStore: Writable<string | null> = writable(null);

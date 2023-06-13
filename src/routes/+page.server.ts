@@ -1,4 +1,3 @@
-import { id } from 'date-fns/locale';
 import type { Actions } from './$types';
 import type { PageServerLoad } from './$types';
 import { CareEventListPayload } from './events/event';
@@ -38,6 +37,24 @@ export const actions = {
 	},
 	edit: async ({ request, fetch }) => {
 		const data = await request.formData();
+		const updatedEvent = {
+			datetime: data.get('datetimeLocalInput') || undefined,
+			type: data.get('eventType') || undefined,
+			description: data.get('description') || undefined
+		};
+
+		const response = await fetch(`/events/${data.get('id')}`, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(updatedEvent)
+		});
+
+		if (!response.ok) {
+			return fail(400, { success: false, message: 'Failed to update' });
+		}
+		return { success: true, message: 'updated' };
 	},
 	delete: async ({ request, fetch }) => {
 		const data = await request.formData();

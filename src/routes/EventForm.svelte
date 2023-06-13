@@ -3,10 +3,24 @@
 	import { format, parse } from 'date-fns';
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import { isAddFormOpenedStore } from './stores';
+	import type { z } from 'zod';
+	import type { NewOrUpdatingCareEvent } from './events/event';
 
-	let datetimeLocalInputValue: string = format(new Date(), DATETIME_INPUT_FORMAT);
-	let eventType = 'medication';
+	export let event: z.infer<typeof NewOrUpdatingCareEvent> = {
+		id: undefined,
+		type: 'medication',
+		description: '',
+		datetime: new Date()
+	};
+	export let submitFunction: SubmitFunction = ({}) => {};
+
+	$: formURL = event.id ? '?/edit' : '?/add';
+
+	// events use Date objects, but datetime-local inputs use strings, so we gotta translate
+	// when first created, the event sets the input value one time initially
+	let datetimeLocalInputValue = format(event.datetime, DATETIME_INPUT_FORMAT);
+	// but then, flow is reversed, and changes to input value set the event's datetime reactively
+	$: event.datetime = parse(datetimeLocalInputValue, DATETIME_INPUT_FORMAT, new Date());
 
 	const descriptionLabels = new Map([
 		['medication', 'What medication was taken and how much?'],
@@ -25,19 +39,12 @@
 		['food', 'When was the food eaten?'],
 		['symptom', 'When was the symptom experienced?']
 	]);
-
-	let formAction: SubmitFunction = ({}) => {
-		// indicate that we're closed after form submission
-		isAddFormOpenedStore.set(false);
-	};
 </script>
 
-<form
-	class="w-full p-4 rounded-lg shadow-sm bg-gray-200"
-	method="POST"
-	use:enhance={formAction}
-	action="?/add"
->
+<form method="POST" use:enhance={submitFunction} action={formURL}>
+	{#if event.id}
+		<input type="hidden" name="id" bind:value={event.id} />
+	{/if}
 	<div class="flex flex-col gap-4">
 		<fieldset class="flex flex-col justify-start">
 			<legend class="block text-gray-700 text-sm font-bold mb-2">What kind of thing was it?</legend>
@@ -45,11 +52,11 @@
 				<label
 					for="medicationInput"
 					class="bg-gray-100 text-gray-700 px-3 py-2 rounded-md mr-2"
-					class:selected={eventType === 'medication'}>Medication</label
+					class:selected={event.type === 'medication'}>Medication</label
 				>
 				<input
 					class="appearance-none focus:outline-none"
-					bind:group={eventType}
+					bind:group={event.type}
 					type="radio"
 					id="medicationInput"
 					name="eventType"
@@ -60,12 +67,12 @@
 				<label
 					for="foodInput"
 					class="bg-gray-100 text-gray-700 px-3 py-2 rounded-md mr-2"
-					class:selected={eventType === 'food'}
+					class:selected={event.type === 'food'}
 				>
 					Food</label
 				><input
 					class="appearance-none focus:outline-none"
-					bind:group={eventType}
+					bind:group={event.type}
 					type="radio"
 					id="foodInput"
 					name="eventType"
@@ -75,13 +82,13 @@
 				<label
 					for="symptomInput"
 					class="bg-gray-100 text-gray-700 px-3 py-2 rounded-md"
-					class:selected={eventType === 'symptom'}
+					class:selected={event.type === 'symptom'}
 				>
 					Symptom</label
 				>
 				<input
 					class="appearance-none focus:outline-none"
-					bind:group={eventType}
+					bind:group={event.type}
 					type="radio"
 					id="symptomInput"
 					name="eventType"
@@ -92,21 +99,22 @@
 
 		<div>
 			<label for="description" class="block text-gray-700 text-sm font-bold mb-2"
-				>{descriptionLabels.get(eventType)}</label
+				>{descriptionLabels.get(event.type)}</label
 			>
 			<input
 				id="description"
 				class="w-full px-3 py-2 rounded-md text-gray-700 bg-gray-100"
 				type="text"
 				name="description"
-				placeholder={descriptionPlaceholders.get(eventType)}
+				placeholder={descriptionPlaceholders.get(event.type)}
+				bind:value={event.description}
 				required
 			/>
 		</div>
 
 		<div class="flex flex-col gap-2">
 			<label for="event-datetime" class="block text-gray-700 text-sm font-bold"
-				>{datetimeLabels.get(eventType)}</label
+				>{datetimeLabels.get(event.type)}</label
 			>
 			<input
 				id="event-datetime"
@@ -122,13 +130,13 @@
 				class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md"
 				type="submit"
 			>
-				Add Event
+				{#if event.id}Update Event{:else}Add Event{/if}
 			</button>
 		</div>
 	</div>
 </form>
 
-<style>
+<style lang="postcss">
 	.selected {
 		@apply bg-blue-600 text-white;
 	}

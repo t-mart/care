@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { CareEvent } from './events/event';
 	import type { z } from 'zod';
-	import Event from './Event.svelte';
+	import EventRow from './EventRow.svelte';
 
 	export let events: z.infer<typeof CareEvent>[];
 	let date: string;
@@ -24,11 +24,11 @@
 </script>
 
 <div>
-	<h2 class="text-xl font-semibold text-gray-700">{date}</h2>
+	<h2 class="text-xl font-semibold text-gray-700 px-4">{date}</h2>
 	<ul>
 		{#each events as event (event.id)}
 			<li>
-				<Event {event} />
+				<EventRow {event} />
 			</li>
 		{/each}
 	</ul>

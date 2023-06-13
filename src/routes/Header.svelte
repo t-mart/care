@@ -1,8 +1,9 @@
 <script lang="ts">
 	import HeadShake from './HeadShake.svelte';
-	import { headerHeightPxStore, isAddFormOpenedStore } from './stores';
+	import { headerHeightPxStore, isAddFormOpenedStore, actionMenuEventIdStore } from './stores';
 
 	function handleAddClick() {
+		actionMenuEventIdStore.set(null);
 		isAddFormOpenedStore.update((value) => {
 			const newValue = !value;
 			if (newValue) {
@@ -15,7 +16,7 @@
 </script>
 
 <header
-	class="fixed top-0 left-0 w-full h-min bg-gray-200 z-10 py-2 flex items-center justify-center shadow-sm"
+	class="fixed top-0 left-0 w-full h-min bg-gray-200 z-10 py-2 flex items-center justify-center shadow-md"
 	bind:clientHeight={$headerHeightPxStore}
 >
 	<div class="flex justify-between max-w-prose w-[65ch] px-4">
@@ -39,7 +40,7 @@
 	</div>
 </header>
 
-<style>
+<style lang="postcss">
 	.opened {
 		@apply bg-gray-700;
 	}

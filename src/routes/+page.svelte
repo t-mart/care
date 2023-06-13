@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { formatISO } from 'date-fns';
-	import type { PageData, ActionData } from './$types';
+	import type { PageData } from './$types';
 	import Day from './Day.svelte';
-	import { CareEventListPayload, type CareEvent } from './events/event';
+	import type { CareEvent } from './events/event';
 	import type { z } from 'zod';
-	import AddForm from './AddForm.svelte';
+	import EventForm from './EventForm.svelte';
 	import { isAddFormOpenedStore } from './stores';
 
 	// don't change these names, they are used by the framework
@@ -36,21 +36,6 @@
 
 		dateBuckets = dateBuckets; // fake reactivity
 	}
-
-	async function refresh() {
-		const response = await fetch('/events');
-		const newData = await response.json().then((newData) => {
-			return CareEventListPayload.parse(newData);
-		});
-		console.log('refreshed', newData);
-		data = newData;
-	}
-
-	let isAddFormOpened = false;
-
-	isAddFormOpenedStore.subscribe((value) => {
-		isAddFormOpened = value;
-	});
 </script>
 
 <svelte:head>
@@ -59,10 +44,16 @@
 </svelte:head>
 
 <div class="flex flex-col gap-4 py-4">
-	{#if isAddFormOpened}
-		<AddForm />
+	{#if $isAddFormOpenedStore}
+		<div class="p-4 rounded-lg shadow-md bg-gray-200">
+			<EventForm
+				submitFunction={({}) => {
+					isAddFormOpenedStore.set(false);
+				}}
+			/>
+		</div>
 	{/if}
-	<ol class="flex flex-col gap-4 w-full px-4">
+	<ol class="flex flex-col gap-4 w-full">
 		{#each Array.from(dateBuckets.entries()) as [date, eventsInDate] (date)}
 			<li><Day events={eventsInDate} /></li>
 		{/each}

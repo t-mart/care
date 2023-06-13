@@ -13,6 +13,8 @@ export const NewCareEvent = CareEvent.omit({ id: true });
 
 export const UpdatingCareEvent = NewCareEvent.partial();
 
+export const NewOrUpdatingCareEvent = CareEvent.partial({ id: true });
+
 export function fromDocumentSnapshot(
 	snapshot: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>
 ): z.infer<typeof CareEvent> {
