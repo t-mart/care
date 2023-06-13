@@ -27,11 +27,17 @@
 	]);
 
 	let formAction: SubmitFunction = ({}) => {
+		// indicate that we're closed after form submission
 		isAddFormOpenedStore.set(false);
 	};
 </script>
 
-<form class="w-full p-4 rounded-lg shadow-sm bg-gray-200" method="POST" use:enhance={formAction} action="?/add">
+<form
+	class="w-full p-4 rounded-lg shadow-sm bg-gray-200"
+	method="POST"
+	use:enhance={formAction}
+	action="?/add"
+>
 	<div class="flex flex-col gap-4">
 		<fieldset class="flex flex-col justify-start">
 			<legend class="block text-gray-700 text-sm font-bold mb-2">What kind of thing was it?</legend>

@@ -5,19 +5,15 @@
 	import { enhance } from '$app/forms';
 
 	export let event: z.infer<typeof CareEvent>;
-	export let editMenuIsOpen = false;
-
-	openedEditMenuEventIdStore.subscribe((newId) => {
-		editMenuIsOpen = newId === event.id;
-	});
 
 	function handleToggleEditMenuClick() {
-		if (editMenuIsOpen) {
-			openedEditMenuEventIdStore.set(null);
-		} else {
-			openedEditMenuEventIdStore.set(event.id);
-		}
+		openedEditMenuEventIdStore.update((id) => {
+			// toggle: if we're the currently opened id, nullify, else set to our id
+			return id === event.id ? null : event.id;
+		});
 	}
+
+	$: ourEditMenuIsOpen = $openedEditMenuEventIdStore === event.id;
 
 	let emojiTypeMap = new Map([
 		['food', '🍔'],
@@ -26,7 +22,7 @@
 	]);
 </script>
 
-<div class="flex gap-2 justify-between" class:edit-menu-open={editMenuIsOpen}>
+<div class="flex gap-2 justify-between" class:edit-menu-open={ourEditMenuIsOpen}>
 	<div class="flex gap-2">
 		<button on:click={handleToggleEditMenuClick} class="underline">
 			{event.datetime.toLocaleTimeString('en-US', {
@@ -37,7 +33,7 @@
 		<div>{emojiTypeMap.get(event.type)}</div>
 		<div>{event.description}</div>
 	</div>
-	{#if editMenuIsOpen}
+	{#if ourEditMenuIsOpen}
 		<form class="flex gap-2 text-white text-xs" method="POST" use:enhance>
 			<input type="hidden" name="id" value={event.id} />
 			<button

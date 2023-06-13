@@ -5,13 +5,11 @@
 	import { CareEventListPayload, type CareEvent } from './events/event';
 	import type { z } from 'zod';
 	import AddForm from './AddForm.svelte';
-	import { isAddFormOpenedStore, formActionDataStore } from './stores';
+	import { isAddFormOpenedStore } from './stores';
 
 	// don't change these names, they are used by the framework
 	export let data: PageData;
-	export let form: ActionData;
-
-	$: formActionDataStore.set(form);
+	// export let form: ActionData;
 
 	let dateBuckets: Map<String, z.infer<typeof CareEvent>[]> = new Map();
 
